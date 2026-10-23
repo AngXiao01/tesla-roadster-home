@@ -5,7 +5,5 @@ shots/
 .env
 .env.*
 /.manus-webdev/preview-identity.json
-# Assets restored from assets.lock.json
-/assets/models/jet-roadster.glb
-# Assets restored from assets.lock.json
+# Favicon stays restored from assets.lock.json and is not committed.
 /assets/share/favicon.png

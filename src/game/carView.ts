@@ -3,8 +3,8 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { CAR } from './car'
 import type { JetOutput } from './rules'
 
-/** Stable Storage address registered in assets.lock.json for assets/models/jet-roadster.glb. */
-export const CAR_MODEL_URL = '/manus-storage/game/sha256/b3eeb586fdbed9f01c9e0f5d16a59d44bcc2577c8d227ea43cd63321eb5111e6.glb'
+/** Local Roadster mesh. Vite serves the public symlink of assets/models/jet-roadster.glb. */
+export const CAR_MODEL_URL = '/assets/models/jet-roadster.glb'
 
 type Puff = { life: number; max: number; pos: THREE.Vector3; vel: THREE.Vector3; size: number }
 const MAX_PUFFS = 600

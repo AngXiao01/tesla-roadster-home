@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "groups": {
+    "share": {
+      "name": "Share",
+      "order": 20
+    },
+    "vehicle": {
+      "name": "玩家车辆",
+      "order": 10
+    }
+  },
+  "bundles": {},
+  "assets": {
+    "assets/models/jet-roadster.glb": {
+      "path": "/manus-storage/game/sha256/b3eeb586fdbed9f01c9e0f5d16a59d44bcc2577c8d227ea43cd63321eb5111e6.glb",
+      "sha256": "sha256:b3eeb586fdbed9f01c9e0f5d16a59d44bcc2577c8d227ea43cd63321eb5111e6",
+      "size": 954224,
+      "assetType": "model",
+      "groupId": "vehicle"
+    },
+    "assets/share/favicon.png": {
+      "path": "/manus-storage/game/sha256/201cfe7f4a5e1de5489a198fb93015eec961286dd981dad8f223b1d69d918107.png",
+      "sha256": "sha256:201cfe7f4a5e1de5489a198fb93015eec961286dd981dad8f223b1d69d918107",
+      "size": 13279,
+      "assetType": "image",
+      "groupId": "share"
+    }
+  }
+}

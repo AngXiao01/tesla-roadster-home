@@ -249,13 +249,6 @@ export class Game {
       this.hooks.message('msg.unstuck', 'info')
     }
   }
-  /** Put the car back on its wheels at its current spot, keeping some speed. */
-  private rightInPlace(): void {
-    const c = this.car
-    const v = c.vel.clone().multiplyScalar(0.35)
-    c.reset(c.pos.x, c.pos.y, c.pos.z, c.cameraYaw)
-    c.vel.set(v.x, 0, v.z)
-  }
   private resetToSafe(key: MessageKey): void {
     this.run = { ...this.run, resets: this.run.resets + 1 }
     this.gas = { gas: Math.max(this.gas.gas, CONFIG.gas.resetFloor), sinceJet: 99 }
@@ -269,11 +262,11 @@ export class Game {
     const resetPressed = this.input.consume('reset')
     this.input.consume('lift')
     this.input.consume('boost')
-    const playing = this.mode === 'playing'
-    // The world keeps its own clock only while playing so pausing freezes trains and traffic.
-    if (!playing) return
+    const driving = this.mode === 'playing' || this.mode === 'ended'
+    // Pausing and the title freeze trains and traffic. Finishing the run does not.
+    if (!driving) return
     this.time += dt
-    this.run = { ...this.run, elapsed: this.run.elapsed + dt, unranked: this.run.unranked || tuning.unranked }
+    if (this.mode === 'playing') this.run = { ...this.run, elapsed: this.run.elapsed + dt, unranked: this.run.unranked || tuning.unranked }
     this.prevPos.copy(this.car.pos)
     this.prevQuat.copy(this.car.quat)
     const car = this.car
@@ -331,6 +324,10 @@ export class Game {
     const events: CarEvent[] = []
     car.step(dt, { throttle: this.throttle, steer: this.steerS, jets: { ...this.jets, side: 0 } }, this.solids, events)
     for (const e of events) this.onCarEvent(e)
+    if (resetPressed) {
+      this.resetToSafe('msg.reset')
+      return
+    }
     if (this.mode !== 'playing') return
 
     // Rings over the trench: pass through the ring plane inside its radius.
@@ -386,17 +383,11 @@ export class Game {
       }
     }
 
-    if (resetPressed) {
-      this.resetToSafe('msg.reset')
-      return
-    }
-
     // Home: crossing the front line of the house apron anywhere (driving, off-road or flying over the roof) ends the trip.
-    const arrived = car.pos.z < SPOT.z1
-    if (arrived) {
+    // The results card can show, but the car stays in this world and keeps the controls.
+    if (car.pos.z < SPOT.z1) {
       this.run = { ...this.run, phase: 'home' }
       this.mode = 'ended'
-      this.input.clear()
       this.audio.play('home')
       this.hooks.end(this.run)
     }
@@ -407,7 +398,6 @@ export class Game {
       if (e.landing === 'crash') {
         this.cam.addShake(0.9)
         this.audio.play('crash')
-        this.rightInPlace()
         this.hooks.message('msg.crash', 'bad')
         return
       }
@@ -497,7 +487,7 @@ export class Game {
   render(alpha: number, dt: number): void {
     const t = performance.now() / 1000
     const live = this.mode === 'playing' || this.mode === 'ended'
-    const a = this.mode === 'playing' ? alpha : 1
+    const a = live ? alpha : 1
     const pos = new THREE.Vector3().lerpVectors(this.prevPos, this.car.pos, a)
     const quat = new THREE.Quaternion().slerpQuaternions(this.prevQuat, this.car.quat, a)
     this.view.root.position.copy(pos)
@@ -506,7 +496,7 @@ export class Game {
     this.view.body.rotation.z = this.car.grounded ? -this.car.steerVisual * Math.min(1, this.car.speed / 20) * 0.05 : 0
     this.view.root.updateMatrixWorld()
     this.worldMatrix.copy(this.view.root.matrixWorld)
-    if (this.mode === 'playing') this.view.emit(this.jets, this.worldMatrix, this.car.vel, dt)
+    if (live) this.view.emit(this.jets, this.worldMatrix, this.car.vel, dt)
     this.view.update(dt)
     // Ground shadow and landing marker.
     const ground = this.car.supportAt(pos.x, pos.z, pos.y + 0.01, this.solids.length ? this.solids : STATIC)
@@ -555,7 +545,7 @@ export class Game {
       const dx = Math.max(0, Math.abs(pos.x - (head - 50)) - 50)
       train = Math.max(0, 1 - Math.hypot(dx, pos.z - Z.track) / 140)
     }
-    if (this.mode === 'playing' && this.crossing.phase !== 'open' && this.nearRail(130)) {
+    if (live && this.crossing.phase !== 'open' && this.nearRail(130)) {
       this.bellTimer -= dt
       if (this.bellTimer <= 0) {
         this.audio.play('bell')
@@ -563,7 +553,7 @@ export class Game {
       }
     }
     const jet = this.jets.rear + this.jets.lift + Math.abs(this.jets.side) + Math.abs(this.jets.strafe ?? 0)
-    this.audio.drive(this.car.speed, this.throttle, this.mode === 'playing' ? jet : 0, train, this.mode === 'playing')
+    this.audio.drive(this.car.speed, this.throttle, live ? jet : 0, train, live)
     this.renderer.render(this.world.scene, this.cam.camera)
   }
 

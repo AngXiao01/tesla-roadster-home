@@ -37,7 +37,7 @@ describe('gas', () => {
 
 describe('landing and parking', () => {
   it('classifies landings', () => {
-    expect(classifyLanding(CONFIG.car.crashImpact + 1, 1, 2)).toBe('crash')
+    expect(classifyLanding(CONFIG.car.crashImpact + 1, 1, 2)).toBe('rough')
     expect(classifyLanding(4, 0.3, 2)).toBe('crash')
     expect(classifyLanding(5, 0.99, 1.5)).toBe('clean')
     expect(classifyLanding(5, 0.99, 0.2)).toBe('rough')
@@ -132,7 +132,7 @@ describe('route', () => {
     expect(WALLS.filter(b => b.kind === 'truck').every(b => b.solid !== false)).toBe(true)
     const edge = ROAD_HALF + 0.3
     const sides = WALLS.filter(b => b.solid === false)
-    expect(sides).toHaveLength(11)
+    expect(sides).toHaveLength(4)
     for (const b of sides) {
       expect(Math.abs(Math.abs((b.min[0] + b.max[0]) / 2) - edge)).toBeLessThan(0.05)
       expect(b.max[0] - b.min[0]).toBeLessThan(2)

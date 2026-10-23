@@ -79,7 +79,8 @@ export function addGas(gas: number, amount: number, cfg: Config = CONFIG): numbe
 export type Landing = 'crash' | 'clean' | 'rough'
 /** `upright` is the dot product of body up with world up (1 = level). */
 export function classifyLanding(impact: number, upright: number, airTime: number, cfg: Config = CONFIG): Landing {
-  if (impact > cfg.car.crashImpact || upright < 0.55) return 'crash'
+  // A hard but upright return from flight settles onto the road. Only a car still on its side or roof crashes.
+  if (upright < 0.55) return 'crash'
   if (airTime >= cfg.gas.landingMinAir && upright > 0.93 && impact < cfg.car.crashImpact * 0.7) return 'clean'
   return 'rough'
 }

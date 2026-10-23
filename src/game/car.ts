@@ -104,6 +104,12 @@ export class Car {
     if (this.grounded) this.stepGround(dt, c)
     else this.stepAir(dt, c)
     this.pos.addScaledVector(this.vel, dt)
+    // Drop onto the surface before side contacts, so the last half-metre of a descent
+    // does not catch a lip and stop the car.
+    if (!this.grounded && this.vel.y <= 0) {
+      const g = this.supportAt(this.pos.x, this.pos.z, this.pos.y, solids)
+      if (this.pos.y - g <= 0.55 && this.pos.y - g > -2) this.settleOnto(g, events)
+    }
     this.collide(solids, events)
     this.resolveGround(dt, events, solids)
     if (this.pos.y < -12) events.push({ type: 'fell' })
@@ -323,6 +329,30 @@ export class Car {
     return g
   }
 
+  /** Put the wheels on the support, keep the horizontal run, and face the way the car is travelling. */
+  private settleOnto(g: number, events: CarEvent[]): void {
+    const impact = Math.max(0, -this.vel.y)
+    const upright = this.upright
+    const landing = classifyLanding(impact, upright, this.airTime)
+    events.push({ type: 'land', impact, landing, airTime: this.airTime, upright })
+    this.pos.y = g
+    this.vel.y = 0
+    this.grounded = true
+    this.airTime = 0
+    const hx = this.vel.x
+    const hz = this.vel.z
+    const hs = Math.hypot(hx, hz)
+    let yaw = this.yaw
+    if (hs > 4) {
+      const travel = Math.atan2(-hx, -hz)
+      const d = Math.atan2(Math.sin(travel - yaw), Math.cos(travel - yaw))
+      if (Math.abs(d) > 0.45) yaw = travel
+    }
+    this.quat.setFromAxisAngle(UP, yaw)
+    this.angVel.set(0, 0, 0)
+    this.yawRateG = 0
+  }
+
   private resolveGround(dt: number, events: CarEvent[], solids: readonly Box[]): void {
     const g = this.supportAt(this.pos.x, this.pos.z, this.pos.y, solids)
     if (this.grounded) {
@@ -341,17 +371,7 @@ export class Car {
       events.push({ type: 'takeoff' })
     }
     if (this.pos.y <= g && this.vel.y <= 0) {
-      const impact = -this.vel.y
-      const upright = this.upright
-      const landing = classifyLanding(impact, upright, this.airTime)
-      events.push({ type: 'land', impact, landing, airTime: this.airTime, upright })
-      this.pos.y = g
-      this.vel.y = 0
-      this.grounded = true
-      this.airTime = 0
-      const yaw = this.yaw
-      this.quat.setFromAxisAngle(UP, yaw)
-      this.angVel.set(0, 0, 0)
+      this.settleOnto(g, events)
     } else if (this.airTime === 0) {
       // First airborne step; keep counting from here.
       this.airTime = dt * 0.5
@@ -381,6 +401,8 @@ export class Car {
         for (const b of solids) {
           if (b.solid === false) continue
           if (b.max[1] <= y0 + 0.35 || b.min[1] >= y1) continue
+          // Coming down across the top of a box is a landing, not a wall that grabs the car.
+          if (this.vel.y < -0.15 && y0 < b.max[1] && y0 + CAR.height > b.max[1] - 0.2) continue
           const r = CAR.radius
           if (cx < b.min[0] - r || cx > b.max[0] + r || cz < b.min[2] - r || cz > b.max[2] + r) continue
           const px = Math.max(b.min[0], Math.min(cx, b.max[0]))

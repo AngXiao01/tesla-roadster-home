@@ -107,22 +107,14 @@ export const WALLS: Box[] = [
   box(-26, 26, 0, 22, 18, 40, 'building'),
   wallZ(-24, 18, Z.lotEnd, 1.2, 'hedge'), wallZ(24, 18, Z.lotEnd, 1.2, 'hedge'),
   wallX(Z.lotEnd, -24, -R, 1.2, 'hedge'), wallX(Z.lotEnd, R, 24, 1.2, 'hedge'),
-  // Road A. Guardrails stay visible; the car can leave the roadway.
+  // Road A. Guardrails stay visible; the concrete walls along both sides of the road are gone.
   wallZ(-R, Z.lotEnd, Z.bypassIn0, 1.0, 'rail', 0.6, false), wallZ(R, Z.lotEnd, Z.bypassIn0, 1.0, 'rail', 0.6, false),
-  // Jam: tall walls; the left opening is the side road the jam traffic turns into.
-  wallZ(-R, Z.bypassIn0, Z.sideRoad0, 4.5, 'wall', 0.6, false),
-  wallZ(R, Z.bypassIn0, Z.fenceNear, 4.5, 'wall', 0.6, false),
+  // Side street off the jam. Not a roadside wall.
   wallX(Z.sideRoad0, -62, -R, 4.5), wallX(Z.sideRoad1, -62, -R, 4.5), wallZ(-62, Z.sideRoad0, Z.sideRoad1, 4.5),
-  // Road B through loop 1 to the railway.
-  wallZ(-R, Z.sideRoad1, Z.fenceNear, 3, 'wall', 0.6, false),
   wallX(Z.fenceNear, -70, -R, 2.2, 'fence', 0.3), wallX(Z.fenceNear, R, 70, 2.2, 'fence', 0.3),
   wallX(Z.fenceFar, -70, -R, 2.2, 'fence', 0.3), wallX(Z.fenceFar, R, 70, 2.2, 'fence', 0.3),
-  // Truck convoy crossing: road walls open where the cross road passes.
-  wallZ(R, Z.fenceFar, Z.convoyNear, 3, 'wall', 0.6, false), wallZ(-R, Z.fenceFar, Z.convoyNear, 3, 'wall', 0.6, false),
   wallX(Z.convoyNear, -70, -R, 1.2, 'hedge'), wallX(Z.convoyNear, R, 70, 1.2, 'hedge'),
   wallX(Z.convoyFar, -70, -R, 1.2, 'hedge'), wallX(Z.convoyFar, R, 70, 1.2, 'hedge'),
-  // Road C through loop 2 to the houses.
-  wallZ(R, Z.convoyFar, Z.residential, 3, 'wall', 0.6, false), wallZ(-R, Z.convoyFar, Z.residential, 3, 'wall', 0.6, false),
   // Under the low exit end of each loop (right lane, behind the entry): solid so nothing drives into it.
   ...LOOPS.map(l => box(0.2, R - 0.1, 0, 2, l.zEntry + 0.4, l.zEntry + Math.sqrt(2 * 1.6 * l.radius), 'ramp')),
   // The flip curl rises over the right lane: solid there so a car that missed the entry slides off it.

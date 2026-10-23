@@ -14,9 +14,9 @@ export const DEFAULT_CONFIG = {
     /** Lateral grip: how quickly sideways slip is removed on the ground (1/s). Lower = more slide. */
     grip: 4.5,
     /** Peak ground yaw rate (rad/s), reached around 8 m/s and reduced at high speed. */
-    turnRate: 1.8,
+    turnRate: 2.6,
     /** How fast the ground yaw rate follows the steering (1/s): angular inertia. */
-    yawResponse: 7,
+    yawResponse: 11,
     gravity: -16,
     /** Hard cap for any speed including jets (m/s). */
     jetMaxSpeed: 40,
